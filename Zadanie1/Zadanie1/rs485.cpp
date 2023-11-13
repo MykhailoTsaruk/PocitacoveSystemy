@@ -40,7 +40,7 @@ bool purgePort(HANDLE* comPort) {
 	return 1;
 }
 
-DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD buffer_size) {
+DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
 	DWORD bytesRead;
 	DWORD numberOfBytesRead;
 	LPDWORD lpErrors = 0;
@@ -49,7 +49,7 @@ DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD buffer_size) {
 	bytesRead = ReadFile(
 		*comPort,				// pointer to COM port
 		buffer,					// buffer
-		buffer_size,			// size of buffer
+		bufferSize,				// size of buffer
 		&numberOfBytesRead,		// number of bytes read
 		NULL					// not overlapped
 	);
@@ -64,7 +64,7 @@ DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD buffer_size) {
 	return numberOfBytesRead;
 }
 
-DWORD writePort(HANDLE* comPort, LPVOID buffer, DWORD buffer_size) {
+DWORD writePort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
 	DWORD bytesWritten;
 	DWORD numberOfBytesWritten;
 	LPDWORD lpErrors = 0;
@@ -73,7 +73,7 @@ DWORD writePort(HANDLE* comPort, LPVOID buffer, DWORD buffer_size) {
 	bytesWritten = WriteFile(
 		*comPort,					// pointer to COM port
 		buffer,						// buffer
-		buffer_size,				// size of buffer
+		bufferSize,					// size of buffer
 		&numberOfBytesWritten,		// number of bytes written
 		NULL						// not overlapped
 	);

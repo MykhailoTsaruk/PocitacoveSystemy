@@ -1,10 +1,7 @@
 ﻿  main.cpp
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(17,2): error C2143: синтаксическая ошибка: отсутствие ";" перед "const"
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(16,7): error C2133: comPort: неизвестный размер
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(22,2): error C2660: initPort: функция не принимает 0 аргументов
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\rs485.cpp(24,6): message : см. объявление "initPort"
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(22,2): message : при попытке сопоставить список аргументов "()"
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(24,2): error C2143: синтаксическая ошибка: отсутствие ";" перед "return"
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(7,6): error C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  rs485.cpp
-  Создание кода...
+D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): warning C4477: "scanf_s": в строке форматирования "%s" требуется аргумент типа "unsigned int", но вариативный аргумент "2" имеет тип "int *"
+D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): message : этот аргумент используется в качестве размера буфера
+D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): warning C4473: "scanf_s": передано недостаточно аргументов для строки формата
+D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): message : заполнители и их параметры ожидают переменное число аргументов в количестве 3, но было предоставлено 2
+D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): message : отсутствующий вариативный аргумент "3" требуется для строки форматирования "%d"
+  Zadanie1.vcxproj -> D:\Programming\PocitacoveSystemy\Zadanie1\x64\Debug\Zadanie1.exe

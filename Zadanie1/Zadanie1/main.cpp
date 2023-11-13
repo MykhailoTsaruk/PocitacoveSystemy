@@ -1,4 +1,4 @@
-﻿#include "rs485.cpp"
+﻿#include "rs485.h"
 
 void sendRequest() {
 
@@ -12,7 +12,7 @@ void sendResponse() {
 
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
 	if (argv[1] == NULL) {
 		printf("Please reopen file and set argument to 'rx/tx'\n");
 		return 1;
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 	int port_number;
 	printf("Select serial port: COM");
 	
-	if (scanf("%d", &port_number) != 1) {
+	if (scanf_s("%d", &port_number) == 0) {
 		fprintf(stderr, "Not a number!\n");
 		return 1;
 	}
@@ -32,33 +32,36 @@ int main(int argc, char** argv) {
 
 	char portName[6];
 	HANDLE comPort;
-	const int bufferSize = 256;
+	const int bufferSize = 32;
 	const int baudRate = 9600;
 	const int bitsPerByte = 8;
-	COMMTIMEOUTS timeout;
+	COMMTIMEOUTS timeout = { 0 };
 
-	sprintf(portName, "COM%d\0", port_number);
+	sprintf_s(portName, "COM%d\0", port_number);
 
-	initPort(&comPort, portName, baudRate, bitsPerByte, timeout);
-	Sleep(1000);
-
-	if (argv[1] == "rx") {
+	if (initPort(&comPort, portName, baudRate, bitsPerByte, timeout) == 0)
+		return 0;
+	Sleep(250);
+	printf("%s\n", argv[1]);
+	if (strcmp(argv[1], "rx") == 0) {
 		printf("Enter you pattern(use _ to represent any letter) and lenght: ");
-		char* word;
-		int* wordLenght;
-		if (scanf("%s %d", word, &wordLenght) == 0) {
+		DWORD bytesWrite;
+		char word[bufferSize];
+		int* wordLenght = 0;
+		if (scanf_s("%s %d", word, wordLenght) == 0) {
 			fprintf(stderr, "Do word was entered\n");
 			return 1;
 		}
-		assert(writePort(&comPort, word, *wordLenght) == 0);
-	} else if (argv[1] == "tx") {
+		bytesWrite = writePort(&comPort, word, *wordLenght);
+		assert(bytesWrite == 0);
+	} else if (strcmp(argv[1], "tx") == 0) {
 		DWORD bytesRead;
-		char* readData;
-		bytesRead = readPort(&comPort, readData, sizeof(readData));
+		char readData[bufferSize];
+		bytesRead = readPort(&comPort, readData, bufferSize);
 		assert(bytesRead == 0);
 	} else {
 		printf("Please reopen file and set argument to 'rx/tx'\n");
-		return 1;
+		return 2;
 	}
 
 	return 0;

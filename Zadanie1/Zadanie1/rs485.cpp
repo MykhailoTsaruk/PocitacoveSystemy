@@ -52,13 +52,14 @@ DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
 		bufferSize,				// size of buffer
 		&numberOfBytesRead,		// number of bytes read
 		NULL					// not overlapped
-	);
+	);	
 	// Check for errors.
 	if (bytesRead == 0) {
 		printf("Read erorr: 0x%x\n", GetLastError());
 		ClearCommError(comPort, lpErrors, lpStat);
 		return 0;
 	}
+	printf("bytes read %d", bytesRead);
 
 	printf("Successful read %ld bytes\n", numberOfBytesRead);
 	return numberOfBytesRead;

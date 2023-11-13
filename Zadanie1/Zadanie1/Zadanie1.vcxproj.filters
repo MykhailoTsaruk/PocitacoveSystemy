@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="rs485.c">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="rs485.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>

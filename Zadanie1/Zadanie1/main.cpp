@@ -48,9 +48,12 @@ int main(int argc, char* argv[]) {
 		DWORD bytesWrite;
 		char word[bufferSize];
 		int* wordLenght = 0;
-		if (scanf_s("%s %d", word, wordLenght) == 0) {
+		if (scanf_s("%s %d", word, &wordLenght) == 0) {
 			fprintf(stderr, "Do word was entered\n");
 			return 1;
+		}
+		else {
+			printf("word successful\n");
 		}
 		bytesWrite = writePort(&comPort, word, *wordLenght);
 		assert(bytesWrite == 0);

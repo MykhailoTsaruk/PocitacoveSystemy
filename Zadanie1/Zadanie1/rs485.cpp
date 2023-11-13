@@ -41,6 +41,7 @@ bool purgePort(HANDLE* comPort) {
 }
 
 DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
+	Sleep(5000);
 	DWORD bytesRead;
 	DWORD numberOfBytesRead;
 	LPDWORD lpErrors = 0;
@@ -59,7 +60,7 @@ DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
 		ClearCommError(comPort, lpErrors, lpStat);
 		return 0;
 	}
-	printf("bytes read %d", bytesRead);
+	printf("bytes read %d\n", bytesRead);
 
 	printf("Successful read %ld bytes\n", numberOfBytesRead);
 	return numberOfBytesRead;

@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <string.h>
 #include <cassert>
+#include <iostream>
 
 bool createPort(HANDLE* comPort, char* portName);
 

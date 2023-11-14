@@ -1,17 +1,5 @@
 ﻿#include "rs485.h"
 
-void sendRequest() {
-
-}
-
-void getRequest() {
-
-}
-
-void sendResponse() {
-
-}
-
 int main(int argc, char* argv[]) {
 	if (argv[1] == NULL) {
 		printf("Please reopen file and set argument to 'rx/tx'\n");
@@ -47,16 +35,16 @@ int main(int argc, char* argv[]) {
 		printf("Enter you pattern(use _ to represent any letter) and lenght: ");
 		DWORD bytesWrite;
 		char word[bufferSize];
-		int* wordLenght = 0;
-		if (scanf_s("%s %d", word, &wordLenght) == 0) {
+		DWORD wordLenght;
+		if (scanf_s("%31s %lu", word, sizeof(word), &wordLenght) == 2) {
+			printf("Word successful entered\n");
+			bytesWrite = writePort(&comPort, word, wordLenght);
+			assert(bytesWrite == 0);
+		}
+		else {
 			fprintf(stderr, "Do word was entered\n");
 			return 1;
 		}
-		else {
-			printf("word successful\n");
-		}
-		bytesWrite = writePort(&comPort, word, *wordLenght);
-		assert(bytesWrite == 0);
 	} else if (strcmp(argv[1], "tx") == 0) {
 		DWORD bytesRead;
 		char readData[bufferSize];

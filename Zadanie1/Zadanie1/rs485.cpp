@@ -41,7 +41,7 @@ bool purgePort(HANDLE* comPort) {
 }
 
 DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
-	Sleep(5000);
+	//Sleep(5000);
 	DWORD bytesRead;
 	DWORD numberOfBytesRead;
 	LPDWORD lpErrors = 0;

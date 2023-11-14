@@ -40,12 +40,13 @@ bool purgePort(HANDLE* comPort) {
 	return 1;
 }
 
-DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
+DWORD readPort(HANDLE* comPort, LPVOID buf, DWORD bufferSize) {
 	//Sleep(5000);
 	DWORD bytesRead;
 	DWORD numberOfBytesRead;
 	LPDWORD lpErrors = 0;
 	LPCOMSTAT lpStat = 0;
+	/*
 	// Read the data from the serial port.
 	bytesRead = ReadFile(
 		*comPort,				// pointer to COM port
@@ -63,6 +64,47 @@ DWORD readPort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
 	printf("bytes read %d\n", bytesRead);
 
 	printf("Successful read %ld bytes\n", numberOfBytesRead);
+	*/
+	while (true) {
+		// ќжидание, пока не по€в€тс€ данные
+		if (WaitForSingleObject(*comPort, INFINITE) != WAIT_OBJECT_0) {
+			printf("Failed to wait for data.\n");
+			break;
+		}
+
+		char* buffer = static_cast<char*>(buf);
+
+		// Read the data from the serial port.
+		bytesRead = ReadFile(
+			*comPort,           // pointer to COM port
+			buffer,             // buffer
+			bufferSize,         // size of buffer
+			&numberOfBytesRead, // number of bytes read
+			NULL                // not overlapped
+		);
+
+		// Check for errors.
+		if (bytesRead == 0) {
+			printf("Read error: 0x%x\n", GetLastError());
+			ClearCommError(*comPort, lpErrors, lpStat);
+			break;
+		}
+
+		if (numberOfBytesRead > 0) {
+			printf("Bytes read: %ld\n", numberOfBytesRead);
+			printf("Successful read %ld bytes\n", numberOfBytesRead);
+			
+			for (int i = 0; i < strlen((char*)buffer); i++) {
+				if (buffer[i] < 33 || buffer[i] > 126) {
+					buffer[i] = '\0';
+					break;
+				}
+			}
+
+			printf("%s\nLen: %d\n", buffer, strlen((char*)buffer));
+			break;  // Break out of the loop if data is successfully read
+		}
+	}
 	return numberOfBytesRead;
 }
 
@@ -71,6 +113,9 @@ DWORD writePort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
 	DWORD numberOfBytesWritten;
 	LPDWORD lpErrors = 0;
 	LPCOMSTAT lpStat = 0;
+	
+	printf("%s\n", buffer);
+
 	// Write the data to the serial port.
 	bytesWritten = WriteFile(
 		*comPort,					// pointer to COM port

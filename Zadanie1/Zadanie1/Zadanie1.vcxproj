@@ -129,8 +129,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="rs485.cpp" />
-    <ClCompile Include="__main.cpp" />
-    <ClCompile Include="__rs485.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rs485.h" />

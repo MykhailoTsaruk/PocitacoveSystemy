@@ -21,6 +21,15 @@ bool createPort(HANDLE* comPort, char* portName) {
 	return 1;
 }
 
+bool initPort(HANDLE* comPort, char* portName, uint32_t ComRate, int ComBits, COMMTIMEOUTS timeout) {
+	if (createPort(comPort, portName) == 0) return 0;							// Open serial port
+	if (purgePort(comPort) == 0) return 0;										// Purge any outstanding requests on the serial port
+	if (setComParameters(comPort, ComRate, ComBits, timeout) == 0) return 0;	// Set the serial port parameters
+	if (purgePort(comPort) == 0) return 0;										// Purge any outstanding requests on the serial port
+
+	return 1;
+}
+
 bool purgePort(HANDLE* comPort) {
 	// Purge any outstanding requests on the serial port
 	if (PurgeComm(*comPort, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR) == 0) {
@@ -60,14 +69,66 @@ bool setComParameters(HANDLE* comPort, uint32_t comRate, int comBits, COMMTIMEOU
 	return 1;
 }
 
-bool readPort(HANDLE* comPort, uint8_t* buffer, uint32_t bufferSize, uint32_t* bytesRead) {
+bool readPort(HANDLE* comPort, uint8_t* buffer[], uint32_t bufferSize, uint32_t* bytesRead) {
 	
+	DWORD read;
+	DWORD numberOfBytesRead;
+	//LPDWORD lpErrors = 0;
+	//LPCOMSTAT lpStat = 0;
+
 	while (true) {
+		// Waiting until data is available
 		if (WaitForSingleObject(*comPort, INFINITE) != WAIT_OBJECT_0) {
 			printf("Failed to wait for serial port\nError code: 0x%x\n", GetLastError());
-			break;
+			return 0;
+		}
+		// Read the data from the serial port.
+		read = ReadFile(
+			*comPort,           // pointer to COM port
+			buffer,             // buffer
+			bufferSize,         // size of buffer
+			&numberOfBytesRead, // number of bytes read
+			NULL                // not overlapped
+		);
+		// Check for errors.
+		if (read == 0) {
+			printf("Read error: 0x%x\n", GetLastError());
+			ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+			return 0;
+		}
+		// If data was read, break out of the loop.
+		if (numberOfBytesRead > 0) {
+			printf("Word: %s\n", (char*)buffer);
+			printf("Bytes read: %ld\n", numberOfBytesRead);
+			printf("Successful read %ld bytes\n", numberOfBytesRead);
+			*bytesRead = (uint32_t)numberOfBytesRead;
+			return 1;
 		}
 	}
 
+	return 1;
+}
+
+bool writePort(HANDLE* comPort, uint8_t* buffer, uint8_t wordLength, uint32_t bufferSize, uint32_t* bytesWritten) {
+	
+	DWORD written;
+	DWORD numberOfBytesWritten;
+	// Write the data to the serial port.
+	written = WriteFile(
+		*comPort,				// pointer to COM port
+		buffer,					// buffer
+		bufferSize,				// size of buffer
+		&numberOfBytesWritten,	// number of bytes written
+		NULL					// not overlapped
+	);
+	// Check for errors.
+	if (written == 0) {
+		printf("Write error: 0x%x\n", GetLastError());
+		ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+		return 0;
+	}
+
+	printf("Successfully wrote %ld bytes\n", numberOfBytesWritten);
+	*bytesWritten = (uint32_t)numberOfBytesWritten;
 	return 1;
 }

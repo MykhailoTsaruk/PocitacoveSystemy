@@ -16,8 +16,8 @@ bool initPort(HANDLE* comPort, char* portName, uint32_t ComRate, int ComBits, CO
 
 bool purgePort(HANDLE* comPort);
 
-bool readPort(HANDLE* comPort, uint8_t* buffer, uint32_t bufferSize, uint32_t* bytesRead);
+bool readPort(HANDLE* comPort, uint8_t* buffer[], uint32_t bufferSize, uint32_t* bytesRead);
 
-int writePort(HANDLE* comPort, uint8_t* buffer, uint32_t bufferSize);
+bool writePort(HANDLE* comPort, uint8_t* buffer, uint8_t wordLength, uint32_t bufferSize, uint32_t* bytesWritten);
 
 bool setComParameters(HANDLE* comPort, uint32_t comRate, int comBits, COMMTIMEOUTS timeout);

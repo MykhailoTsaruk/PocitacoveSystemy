@@ -13,20 +13,11 @@ bool createPort(HANDLE* comPort, char* portName) {
 	);
 
 	if (*comPort == INVALID_HANDLE_VALUE) {
-		printf("Could not open COM port %s\nError code: 0x%x\n", portName, GetLastError());
+		printf("Could not open COM port %s\n", portName);
 		return 0;
 	}
-	
-	printf("%s port was opened successfully\n", portName);
-	return 1;
-}
 
-bool initPort(HANDLE* comPort, char* portName, int ComRate, int ComBits, COMMTIMEOUTS timeout) {
-	if (createPort(comPort, portName) == 0) return 0;							// Open serial port
-	if (purgePort(comPort) == 0) return 0;										// Purge any outstanding requests on the serial port
-	if (setComParameters(comPort, ComRate, ComBits, timeout) == 0) return 0;	// Set the serial port parameters
-	if (purgePort(comPort) == 0) return 0;										// Purge any outstanding requests on the serial port
-	
+	printf("%s port was opened successfully\n", portName);
 	return 1;
 }
 
@@ -40,102 +31,7 @@ bool purgePort(HANDLE* comPort) {
 	return 1;
 }
 
-DWORD readPort(HANDLE* comPort, LPVOID buf, DWORD bufferSize) {
-	//Sleep(5000);
-	DWORD bytesRead;
-	DWORD numberOfBytesRead;
-	LPDWORD lpErrors = 0;
-	LPCOMSTAT lpStat = 0;
-	/*
-	// Read the data from the serial port.
-	bytesRead = ReadFile(
-		*comPort,				// pointer to COM port
-		buffer,					// buffer
-		bufferSize,				// size of buffer
-		&numberOfBytesRead,		// number of bytes read
-		NULL					// not overlapped
-	);	
-	// Check for errors.
-	if (bytesRead == 0) {
-		printf("Read erorr: 0x%x\n", GetLastError());
-		ClearCommError(comPort, lpErrors, lpStat);
-		return 0;
-	}
-	printf("bytes read %d\n", bytesRead);
-
-	printf("Successful read %ld bytes\n", numberOfBytesRead);
-	*/
-	while (true) {
-		// ќжидание, пока не по€в€тс€ данные
-		if (WaitForSingleObject(*comPort, INFINITE) != WAIT_OBJECT_0) {
-			printf("Failed to wait for data.\n");
-			break;
-		}
-
-		char* buffer = static_cast<char*>(buf);
-
-		// Read the data from the serial port.
-		bytesRead = ReadFile(
-			*comPort,           // pointer to COM port
-			buffer,             // buffer
-			bufferSize,         // size of buffer
-			&numberOfBytesRead, // number of bytes read
-			NULL                // not overlapped
-		);
-
-		// Check for errors.
-		if (bytesRead == 0) {
-			printf("Read error: 0x%x\n", GetLastError());
-			ClearCommError(*comPort, lpErrors, lpStat);
-			break;
-		}
-
-		if (numberOfBytesRead > 0) {
-			printf("Bytes read: %ld\n", numberOfBytesRead);
-			printf("Successful read %ld bytes\n", numberOfBytesRead);
-			
-			for (int i = 0; i < strlen((char*)buffer); i++) {
-				if (buffer[i] < 33 || buffer[i] > 126) {
-					buffer[i] = '\0';
-					break;
-				}
-			}
-
-			printf("%s\nLen: %d\n", buffer, strlen((char*)buffer));
-			break;  // Break out of the loop if data is successfully read
-		}
-	}
-	return numberOfBytesRead;
-}
-
-DWORD writePort(HANDLE* comPort, LPVOID buffer, DWORD bufferSize) {
-	DWORD bytesWritten;
-	DWORD numberOfBytesWritten;
-	LPDWORD lpErrors = 0;
-	LPCOMSTAT lpStat = 0;
-	
-	printf("%s\n", buffer);
-
-	// Write the data to the serial port.
-	bytesWritten = WriteFile(
-		*comPort,					// pointer to COM port
-		buffer,						// buffer
-		bufferSize,					// size of buffer
-		&numberOfBytesWritten,		// number of bytes written
-		NULL						// not overlapped
-	);
-	// Check for errors.
-	if (bytesWritten == 0) {
-		printf("Write erorr: 0x%x\n", GetLastError());
-		ClearCommError(comPort, lpErrors, lpStat);
-		return 0;
-	}
-
-	printf("Successful write %ld bytes\n", numberOfBytesWritten);
-	return bytesWritten;
-}
-
-bool setComParameters(HANDLE* comPort, int comRate, int comBits, COMMTIMEOUTS timeout) {
+bool setComParameters(HANDLE* comPort, uint32_t comRate, int comBits, COMMTIMEOUTS timeout) {
 	DCB dcb;
 	// Clear DCB structure
 	memset(&dcb, 0, sizeof(dcb));
@@ -160,6 +56,18 @@ bool setComParameters(HANDLE* comPort, int comRate, int comBits, COMMTIMEOUTS ti
 	timeout.ReadTotalTimeoutMultiplier = 1;		// The multiplier used to calculate the total time-out period for read operations in milliseconds.
 	timeout.ReadTotalTimeoutConstant = 5000;	// The constant used to calculate the total time-out period for read operations in milliseconds.
 	SetCommTimeouts(*comPort, &timeout);
+
+	return 1;
+}
+
+bool readPort(HANDLE* comPort, uint8_t* buffer, uint32_t bufferSize, uint32_t* bytesRead) {
+	
+	while (true) {
+		if (WaitForSingleObject(*comPort, INFINITE) != WAIT_OBJECT_0) {
+			printf("Failed to wait for serial port\nError code: 0x%x\n", GetLastError());
+			break;
+		}
+	}
 
 	return 1;
 }

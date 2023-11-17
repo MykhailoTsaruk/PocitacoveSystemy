@@ -61,18 +61,178 @@ bool setComParameters(HANDLE* comPort, uint32_t comRate, int comBits, COMMTIMEOU
 
 	// Set timeouts
 	memset((void*)&timeout, 0, sizeof(timeout));
-	timeout.ReadIntervalTimeout = 500;			// Maximum time to wait between bytes in milliseconds.
-	timeout.ReadTotalTimeoutMultiplier = 1;		// The multiplier used to calculate the total time-out period for read operations in milliseconds.
-	timeout.ReadTotalTimeoutConstant = 5000;	// The constant used to calculate the total time-out period for read operations in milliseconds.
+	timeout.ReadIntervalTimeout = MAXWORD;			// Maximum time to wait between bytes in milliseconds.
+	timeout.ReadTotalTimeoutMultiplier = 0;		// The multiplier used to calculate the total time-out period for read operations in milliseconds.
+	timeout.ReadTotalTimeoutConstant = 100;	// The constant used to calculate the total time-out period for read operations in milliseconds.
+	timeout.WriteTotalTimeoutMultiplier = 0;
+	timeout.WriteTotalTimeoutConstant = 0;
 	SetCommTimeouts(*comPort, &timeout);
 
 	return 1;
 }
 
-bool readPort(HANDLE* comPort, uint8_t* buffer[], uint32_t bufferSize, uint32_t* bytesRead) {
+bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesRead) {
+	DWORD read;
+	DWORD numberOfBytesRead;
+
+	while (true) {
+		// Waiting until data is available
+		if (WaitForSingleObject(*comPort, INFINITE) != WAIT_OBJECT_0) {
+			printf("Failed to wait for serial port\nError code: 0x%x\n", GetLastError());
+			return 0;
+		}
+
+		// Read the data from the serial port.
+		read = ReadFile(
+			*comPort,           // pointer to COM port
+			buffer[0],          // buffer
+			bufferSize,         // size of buffer
+			&numberOfBytesRead, // number of bytes read
+			NULL                // not overlapped
+		);
+
+		// Check for errors.
+		if (read == 0) {
+			printf("Read error: 0x%x\n", GetLastError());
+			ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+			return 0;
+		}
+
+		// If data was read, break out of the loop.
+		if (numberOfBytesRead > 0) {
+			*bytesRead = (uint32_t)numberOfBytesRead;
+			buffer[1][0] = buffer[0][numberOfBytesRead - 1];
+			buffer[1][1] = '\0';
+			buffer[0][numberOfBytesRead] = '\0';
+			
+			printf("String: %s\n", buffer[0]);
+			printf("Length word: %d\n", buffer[1][0]);
+
+			printf("Bytes read: %ld\n", numberOfBytesRead);
+			printf("Successful read %ld bytes\n", numberOfBytesRead);
+
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/*
+bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesRead) {
+	DWORD read;
+	DWORD numberOfBytesRead;
+
+	while (true) {
+		// Waiting until data is available
+		if (WaitForSingleObject(*comPort, INFINITE) != WAIT_OBJECT_0) {
+			printf("Failed to wait for serial port\nError code: 0x%x\n", GetLastError());
+			return 0;
+		}
+
+		// Read the data from the serial port.
+		read = ReadFile(
+			*comPort,           // pointer to COM port
+			buffer[0],          // buffer
+			bufferSize,         // size of buffer
+			&numberOfBytesRead, // number of bytes read
+			NULL                // not overlapped
+		);
+
+		// Check for errors.
+		if (read == 0) {
+			printf("Read error: 0x%x\n", GetLastError());
+			ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+			return 0;
+		}
+
+		// If data was read, break out of the loop.
+		if (numberOfBytesRead > 0) {
+			buffer[0][numberOfBytesRead] = '\0'; // Null-terminate the received data.
+			printf("String: %s\n", buffer[0]);
+			printf("Bytes read: %ld\n", numberOfBytesRead);
+			printf("Successful read %ld bytes\n", numberOfBytesRead);
+
+			// Read the second part of the data (assuming it's a single byte).
+			read = ReadFile(
+				*comPort,           // pointer to COM port
+				buffer[1],          // buffer for the single byte
+				1,                  // size of buffer for the single byte
+				&numberOfBytesRead, // number of bytes read
+				NULL                // not overlapped
+			);
+
+			if (read == 0) {
+				printf("Read error for the second part: 0x%x\n", GetLastError());
+				ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+				return 0;
+			}
+
+			printf("Length word: %d\n", buffer[1][0]);
+			printf("Bytes read: %ld\n", numberOfBytesRead);
+			printf("Successful read %ld bytes\n", numberOfBytesRead);
+
+			*bytesRead = (uint32_t)(numberOfBytesRead + bufferSize);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+*/
+
+
+bool writePort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesWritten) {
+
+	DWORD written;
+	DWORD numberOfBytesWritten;
+
+	// Write the data to the serial port.
+	written = WriteFile(
+		*comPort,             // pointer to COM port
+		buffer[0],            // buffer for the string
+		strlen(buffer[0]),    // size of buffer for the string
+		&numberOfBytesWritten,// number of bytes written
+		NULL                  // not overlapped
+	);
+
+	// Check for errors.
+	if (written == 0) {
+		printf("Write error for the string: 0x%x\n", GetLastError());
+		ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+		return 0;
+	}
+
+	// Write the second part of the data (assuming it's a single byte).
+	written = WriteFile(
+		*comPort,             // pointer to COM port
+		buffer[1],            // buffer for the single byte
+		1,                    // size of buffer for the single byte
+		&numberOfBytesWritten,// number of bytes written
+		NULL                  // not overlapped
+	);
+
+	// Check for errors.
+	if (written == 0) {
+		printf("Write error for the second part: 0x%x\n", GetLastError());
+		ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+		return 0;
+	}
+
+	printf("String: %s\n", buffer[0]);
+	printf("Byte: %d\n", (int)buffer[1][0]);
+
+	*bytesWritten = (uint32_t)numberOfBytesWritten;
+	return 1;
+}
+
+/*
+bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesRead) {
 	
 	DWORD read;
 	DWORD numberOfBytesRead;
+	//buffer[0] = (char*)malloc(bufferSize);
+	//buffer[1] = (char*)malloc(bufferSize);
 	//LPDWORD lpErrors = 0;
 	//LPCOMSTAT lpStat = 0;
 
@@ -86,7 +246,7 @@ bool readPort(HANDLE* comPort, uint8_t* buffer[], uint32_t bufferSize, uint32_t*
 		read = ReadFile(
 			*comPort,           // pointer to COM port
 			buffer,             // buffer
-			bufferSize,         // size of buffer
+			buffer,         // size of buffer
 			&numberOfBytesRead, // number of bytes read
 			NULL                // not overlapped
 		);
@@ -98,7 +258,7 @@ bool readPort(HANDLE* comPort, uint8_t* buffer[], uint32_t bufferSize, uint32_t*
 		}
 		// If data was read, break out of the loop.
 		if (numberOfBytesRead > 0) {
-			printf("Word: %s\n", (char*)buffer);
+			printf("Word: %s + %d\n", buffer[0], buffer[1][0]);
 			printf("Bytes read: %ld\n", numberOfBytesRead);
 			printf("Successful read %ld bytes\n", numberOfBytesRead);
 			*bytesRead = (uint32_t)numberOfBytesRead;
@@ -108,8 +268,9 @@ bool readPort(HANDLE* comPort, uint8_t* buffer[], uint32_t bufferSize, uint32_t*
 
 	return 1;
 }
-
-bool writePort(HANDLE* comPort, uint8_t* buffer, uint8_t wordLength, uint32_t bufferSize, uint32_t* bytesWritten) {
+*/
+/*
+bool writePort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesWritten) {
 	
 	DWORD written;
 	DWORD numberOfBytesWritten;
@@ -128,7 +289,11 @@ bool writePort(HANDLE* comPort, uint8_t* buffer, uint8_t wordLength, uint32_t bu
 		return 0;
 	}
 
-	printf("Successfully wrote %ld bytes\n", numberOfBytesWritten);
+	printf("strlen: %d\n", strlen((char*)buffer[0]));
+	printf("WORD: %s + %d\n", buffer[0], buffer[1][0]);
+
+	//printf("Successfully wrote %ld bytes\n", numberOfBytesWritten);
 	*bytesWritten = (uint32_t)numberOfBytesWritten;
 	return 1;
 }
+*/

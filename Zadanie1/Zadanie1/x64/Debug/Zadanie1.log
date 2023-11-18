@@ -1,7 +1,0 @@
-﻿  main.cpp
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): warning C4477: "scanf_s": в строке форматирования "%s" требуется аргумент типа "unsigned int", но вариативный аргумент "2" имеет тип "int *"
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): message : этот аргумент используется в качестве размера буфера
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): warning C4473: "scanf_s": передано недостаточно аргументов для строки формата
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): message : заполнители и их параметры ожидают переменное число аргументов в количестве 3, но было предоставлено 2
-D:\Programming\PocitacoveSystemy\Zadanie1\Zadanie1\main.cpp(50,15): message : отсутствующий вариативный аргумент "3" требуется для строки форматирования "%d"
-  Zadanie1.vcxproj -> D:\Programming\PocitacoveSystemy\Zadanie1\x64\Debug\Zadanie1.exe

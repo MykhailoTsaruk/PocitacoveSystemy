@@ -142,7 +142,10 @@ int main(int argc, char* argv[]) {
 			
 		}
 		sendData[0][strlen(readData[0])] = '\0';
+		
+		#ifdef DEBUG
 		printf("SENDDATA = %s\n", sendData[0]);
+		#endif // DEBUG
 
 		uint32_t bytesSend;
 		if (writePort(&comPort, sendData, bytes, &bytesSend, true) == 0) {

@@ -87,10 +87,10 @@ int main(int argc, char* argv[]) {
 			
 			free(buffer[0]);
 			free(buffer[1]);
+			printf("Buffer clear successfully\n");
 
 			// Second part
 			Sleep(1000);
-			printf("Buffer clear successfully\n");
 			char* resultWord[1];
 			resultWord[0] = (char*)malloc(wordLength);
 			if (readPort(&comPort, resultWord, wordLength, &bytes, true) == 0) {
@@ -142,7 +142,10 @@ int main(int argc, char* argv[]) {
 			
 		}
 		sendData[0][strlen(readData[0])] = '\0';
+
+		#ifdef DEBUG
 		printf("SENDDATA = %s\n", sendData[0]);
+		#endif // DEBUG
 
 		uint32_t bytesSend;
 		if (writePort(&comPort, sendData, bytes, &bytesSend, true) == 0) {

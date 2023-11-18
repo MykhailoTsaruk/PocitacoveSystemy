@@ -71,7 +71,7 @@ bool setComParameters(HANDLE* comPort, uint32_t comRate, int comBits, COMMTIMEOU
 	return 1;
 }
 
-bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesRead) {
+bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesRead, bool receive) {
 	DWORD read;
 	DWORD numberOfBytesRead;
 
@@ -101,12 +101,15 @@ bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* by
 		// If data was read, break out of the loop.
 		if (numberOfBytesRead > 0) {
 			*bytesRead = (uint32_t)numberOfBytesRead;
-			buffer[1][0] = buffer[0][numberOfBytesRead - 1];
-			buffer[1][1] = '\0';
+			if (!receive) {
+				buffer[1][0] = buffer[0][numberOfBytesRead - 1];
+				buffer[1][1] = '\0';
+			}
 			buffer[0][numberOfBytesRead] = '\0';
 			
 			printf("String: %s\n", buffer[0]);
-			printf("Length word: %d\n", buffer[1][0]);
+			if (!receive)
+				printf("Length word: %d\n", buffer[1][0]);
 
 			printf("Bytes read: %ld\n", numberOfBytesRead);
 			printf("Successful read %ld bytes\n", numberOfBytesRead);
@@ -182,7 +185,7 @@ bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* by
 */
 
 
-bool writePort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesWritten) {
+bool writePort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* bytesWritten, bool receive) {
 
 	DWORD written;
 	DWORD numberOfBytesWritten;
@@ -203,26 +206,30 @@ bool writePort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* b
 		return 0;
 	}
 
-	// Write the second part of the data (assuming it's a single byte).
-	written = WriteFile(
-		*comPort,             // pointer to COM port
-		buffer[1],            // buffer for the single byte
-		1,                    // size of buffer for the single byte
-		&numberOfBytesWritten,// number of bytes written
-		NULL                  // not overlapped
-	);
+	printf("String: %s\n", buffer[0]);
+	if (!receive) {
+		*bytesWritten = (uint32_t)numberOfBytesWritten;
+		// Write the second part of the data (assuming it's a single byte).
+		written = WriteFile(
+			*comPort,             // pointer to COM port
+			buffer[1],            // buffer for the single byte
+			1,                    // size of buffer for the single byte
+			&numberOfBytesWritten,// number of bytes written
+			NULL                  // not overlapped
+		);
 
-	// Check for errors.
-	if (written == 0) {
-		printf("Write error for the second part: 0x%x\n", GetLastError());
-		ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
-		return 0;
+		// Check for errors.
+		if (written == 0) {
+			printf("Write error for the second part: 0x%x\n", GetLastError());
+			ClearCommError(*comPort, (LPDWORD)0, (LPCOMSTAT)0);
+			return 0;
+		}
+
+		printf("Byte: %d\n", (int)buffer[1][0]);
+
+		*bytesWritten += (uint32_t)numberOfBytesWritten;
 	}
 
-	printf("String: %s\n", buffer[0]);
-	printf("Byte: %d\n", (int)buffer[1][0]);
-
-	*bytesWritten = (uint32_t)numberOfBytesWritten;
 	return 1;
 }
 

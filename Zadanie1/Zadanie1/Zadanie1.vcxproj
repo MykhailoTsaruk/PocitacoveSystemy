@@ -21,9 +21,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="rs485.cpp" />
+    <ClCompile Include="searchWords.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rs485.h" />
+    <ClInclude Include="searchWords.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="text.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

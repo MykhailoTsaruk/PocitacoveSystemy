@@ -1,4 +1,5 @@
 #include "rs485.h"
+#include "searchWords.h"
 
 int main(int argc, char* argv[]) {
 	if (argv[1] == NULL) {
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	Sleep(200);
 
-	printf("%s\n", argv[1]);
+	//printf("%s\n", argv[1]);
 
 	if (strcmp(argv[1], "rx") == 0) {
 		printf("Enter you pattern(use _ to represent any letter) and lenght: ");
@@ -40,7 +41,11 @@ int main(int argc, char* argv[]) {
 		uint8_t wordLength;
 		uint32_t bytes;
 		if (scanf_s("%31s %hhu", word, sizeof(word), &wordLength) == 2) {
-			printf("%s + %d\n", word, wordLength);
+			//printf("%s + %d\n", word, wordLength);
+			if (strlen(word) != wordLength) {
+				fprintf(stderr, "Wrong word length\n");
+				return 1;
+			}
 			printf("Word successful entered\n");
 
 			buffer[0] = (char*)malloc(strlen(word) + 1);
@@ -55,8 +60,8 @@ int main(int argc, char* argv[]) {
 			buffer[1][0] = (char)wordLength;
 			buffer[1][1] = '\0';
 
-			printf("Word in buffer: %s\n", buffer[0]);
-			printf("Lenght word in buffer: %d\n", buffer[1][0]);
+			//printf("Word in buffer: %s\n", buffer[0]);
+			//printf("Lenght word in buffer: %d\n", buffer[1][0]);
 
 			if (writePort(&comPort, buffer, bufferSize, &bytes, false) == 0) {
 				printf("Error writing to serial port\n");
@@ -68,9 +73,9 @@ int main(int argc, char* argv[]) {
 				printf("Success writing to serial port\n");
 			}
 
-			printf("END FUNCTION buffer[0] = %s\n", buffer[0]);
-			printf("END FUNCTION buffer[1] = %d\n", buffer[1][0]);
-			printf("END FUNCTION bytes = %d\n", bytes);
+			//printf("END FUNCTION buffer[0] = %s\n", buffer[0]);
+			//printf("END FUNCTION buffer[1] = %d\n", buffer[1][0]);
+			//printf("END FUNCTION bytes = %d\n", bytes);
 
 			free(buffer[0]);
 			free(buffer[1]);
@@ -86,7 +91,7 @@ int main(int argc, char* argv[]) {
 				return 10;
 			}
 			else {
-				printf("Success writing to serial port\n");
+				printf("You word: %s\n", resultWord[0]);
 			}
 		}
 		else {
@@ -96,8 +101,6 @@ int main(int argc, char* argv[]) {
 	}
 	else if (strcmp(argv[1], "tx") == 0) {
 		while (true) {
-
-
 			char* readData[2];
 			readData[0] = (char*)malloc(bufferSize);
 			readData[1] = (char*)malloc(2);
@@ -112,35 +115,31 @@ int main(int argc, char* argv[]) {
 				printf("Success reading from serial port\n");
 			}
 
-			printf("END FUNCTION readData[0] = %s\n", readData[0]);
-			printf("END FUNCTION readData[1] = %d\n", readData[1][0]);
-			printf("END FUNCTION bytes = %d\n", bytes);
+			//printf("END FUNCTION readData[0] = %s\n", readData[0]);
+			//printf("END FUNCTION readData[1] = %d\n", readData[1][0]);
+			//printf("END FUNCTION bytes = %d\n", bytes);
 
-			free(readData[1]);
 
 			// Second part
 			Sleep(500);
 			char* sendData[1];
-			sendData[0] = (char*)malloc(bytes + 1);
+			sendData[0] = (char*)malloc(bytes);
 
-			for (int i = 0; i < strlen(readData[0]); i++) {
-				if (readData[0][i] >= 'a' && readData[0][i] <= 'z') {
-					sendData[0][i] = readData[0][i] - 32;
-				}
-				else if (readData[0][i] >= 'A' && readData[0][i] <= 'Z') {
-					sendData[0][i] = readData[0][i] + 32;
-				}
-				else {
-					sendData[0][i] = readData[0][i];
-				}
-
+			for (int i = 0; i < bytes-1; i++) {
+				sendData[0][i] = readData[0][i];
 			}
-			sendData[0][strlen(readData[0])] = '\0';
-			printf("SENDDATA = %s\n", sendData[0]);
+			sendData[0][bytes-1] = '\0';
+			//printf("\n\nstrlen(sendData[0]) = %d\nbytes = %d\nsendData[0] = %s\nreadData[1][0] = %d\n", strlen(sendData[0]), bytes, sendData[0], readData[1][0]);
+
+			sendData[0] = searchWords(readData[0], (int)readData[1][0], "text.txt");
+
+			//sendData[0][strlen(readData[0])] = '\0';
+			//printf("SENDDATA = %s\n", sendData[0]);
 
 			uint32_t bytesSend;
 			if (writePort(&comPort, sendData, bytes, &bytesSend, true) == 0) {
 				free(readData[0]);
+				free(readData[1]);
 				free(sendData[0]);
 				printf("Error writing to serial port\n");
 				return 12;
@@ -149,10 +148,8 @@ int main(int argc, char* argv[]) {
 				printf("Success writing to serial port\n", bytesSend);
 			}
 			free(readData[0]);
+			free(readData[1]);
 			free(sendData[0]);
-
-
-
 		}
 	}
 	else {

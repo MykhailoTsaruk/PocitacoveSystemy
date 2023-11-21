@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 			free(buffer[1]);
 
 			// Second part
-			Sleep(1000);
+			Sleep(200);
 			printf("Buffer clear successfully\n");
 			char* resultWord[1];
 			resultWord[0] = (char*)malloc(wordLength);
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 
 
 			// Second part
-			Sleep(500);
+			Sleep(400);
 			char* sendData[1];
 			sendData[0] = (char*)malloc(bytes);
 
@@ -131,7 +131,9 @@ int main(int argc, char* argv[]) {
 			sendData[0][bytes-1] = '\0';
 			//printf("\n\nstrlen(sendData[0]) = %d\nbytes = %d\nsendData[0] = %s\nreadData[1][0] = %d\n", strlen(sendData[0]), bytes, sendData[0], readData[1][0]);
 
-			sendData[0] = searchWords(readData[0], (int)readData[1][0], "text.txt");
+			const char* fileName = "D:\\Programming\\PocitacoveSystemy\\Zadanie1\\Zadanie1\\text.txt";
+
+			sendData[0] = searchWords(readData[0], (int)readData[1][0], fileName);
 
 			//sendData[0][strlen(readData[0])] = '\0';
 			//printf("SENDDATA = %s\n", sendData[0]);

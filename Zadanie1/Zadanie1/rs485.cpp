@@ -90,7 +90,7 @@ bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* by
 			&numberOfBytesRead, // number of bytes read
 			NULL                // not overlapped
 		);
-
+		
 		// Check for errors.
 		if (read == 0) {
 			printf("Read error: 0x%x\n", GetLastError());
@@ -100,6 +100,7 @@ bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* by
 
 		// If data was read, break out of the loop.
 		if (numberOfBytesRead > 0) {
+
 			*bytesRead = (uint32_t)numberOfBytesRead;
 			if (!receive) {
 				buffer[1][0] = buffer[0][numberOfBytesRead - 1];

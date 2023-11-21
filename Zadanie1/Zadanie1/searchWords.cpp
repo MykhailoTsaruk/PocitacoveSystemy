@@ -34,10 +34,8 @@ char* searchWords(const char* pattern, int length, const char* filename) {
                         result = _strdup(token); 
                     }
                     else {
-                        size_t currentSize = strlen(result);
-                        size_t tokenSize = length;
-                        result = (char*)realloc(result, currentSize + tokenSize + 1); // +1 for '\0'
-                        strcat_s(result, currentSize + tokenSize, token);
+                        result = (char*)realloc(result, length + 1); // +1 for '\0'
+                        strcat_s(result, length , token);
                     }
                 }
             }

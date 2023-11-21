@@ -9,6 +9,7 @@
 #include <thread>
 #include <cassert>
 #include <iostream>
+#include <mutex>
 
 bool createPort(HANDLE* comPort, char* portName);
 

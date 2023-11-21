@@ -100,6 +100,7 @@ bool readPort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* by
 
 		// If data was read, break out of the loop.
 		if (numberOfBytesRead > 0) {
+			printf("READ FUNCTION buffer[0] = %s\n", buffer[0]);
 
 			*bytesRead = (uint32_t)numberOfBytesRead;
 			if (!receive) {
@@ -143,9 +144,10 @@ bool writePort(HANDLE* comPort, char* buffer[], uint32_t bufferSize, uint32_t* b
 		return 0;
 	}
 
+	*bytesWritten = (uint32_t)numberOfBytesWritten;
+	printf("WRITE FUNCTION buffer[0] = %s\n", buffer[0]);
 	//printf("String: %s\n", buffer[0]);
 	if (!receive) {
-		*bytesWritten = (uint32_t)numberOfBytesWritten;
 		// Write the second part of the data (assuming it's a single byte).
 		written = WriteFile(
 			*comPort,             // pointer to COM port

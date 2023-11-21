@@ -1,6 +1,27 @@
 #include "rs485.h"
 #include "searchWords.h"
 
+std::mutex mtx;
+
+void serverThread(HANDLE comPort, int bytes, char* sendData[]) {
+	
+	std::lock_guard<std::mutex> lock(mtx);	
+
+	//sendData[0][strlen(readData[0])] = '\0';
+	//printf("SENDDATA = %s\n", sendData[0]);
+
+	printf("\n------SEND------\n%s\n------SEND------\n\n", sendData[0]);
+
+	uint32_t bytesSend;
+	if (writePort(&comPort, sendData, bytes, &bytesSend, true) == 0) {
+		printf("Error writing to serial port\n");
+		return;
+	}
+	else {
+		printf("Success writing %d bytes to serial port\n\n\n", bytes);
+	}
+}
+
 int main(int argc, char* argv[]) {
 	if (argv[1] == NULL) {
 		printf("Please reopen file and set argument to 'rx/tx'\n");
@@ -27,11 +48,11 @@ int main(int argc, char* argv[]) {
 	COMMTIMEOUTS timeout = { 0 };
 
 	sprintf_s(portName, "COM%d\0", port_number);
-
+/*
 	if (initPort(&comPort, portName, baudRate, bitsPerByte, timeout) == 0)
 		return 0;
 	Sleep(200);
-
+*/
 	//printf("%s\n", argv[1]);
 
 	if (strcmp(argv[1], "rx") == 0) {
@@ -41,6 +62,9 @@ int main(int argc, char* argv[]) {
 		uint8_t wordLength;
 		uint32_t bytes;
 		if (scanf_s("%31s %hhu", word, sizeof(word), &wordLength) == 2) {
+			if (initPort(&comPort, portName, baudRate, bitsPerByte, timeout) == 0)
+				return 0;
+			Sleep(200);
 			//printf("%s + %d\n", word, wordLength);
 			if (strlen(word) != wordLength) {
 				fprintf(stderr, "Wrong word length\n");
@@ -81,7 +105,7 @@ int main(int argc, char* argv[]) {
 			free(buffer[1]);
 
 			// Second part
-			Sleep(200);
+			Sleep(50);
 			printf("Buffer clear successfully\n");
 			char* resultWord[1];
 			resultWord[0] = (char*)malloc(wordLength);
@@ -100,6 +124,10 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	else if (strcmp(argv[1], "tx") == 0) {
+		if (initPort(&comPort, portName, baudRate, bitsPerByte, timeout) == 0)
+			return 0;
+		Sleep(100);
+
 		while (true) {
 			char* readData[2];
 			readData[0] = (char*)malloc(bufferSize);
@@ -115,42 +143,35 @@ int main(int argc, char* argv[]) {
 				printf("Success reading from serial port\n");
 			}
 
-			//printf("END FUNCTION readData[0] = %s\n", readData[0]);
+			printf("END FUNCTION readData[0] = %s\n", readData[0]);
 			//printf("END FUNCTION readData[1] = %d\n", readData[1][0]);
 			//printf("END FUNCTION bytes = %d\n", bytes);
 
 
 			// Second part
-			Sleep(400);
+			Sleep(100);
+
 			char* sendData[1];
 			sendData[0] = (char*)malloc(bytes);
 
-			for (int i = 0; i < bytes-1; i++) {
+			for (int i = 0; i < bytes - 1; i++) {
 				sendData[0][i] = readData[0][i];
 			}
-			sendData[0][bytes-1] = '\0';
+			sendData[0][bytes - 1] = '\0';
 			//printf("\n\nstrlen(sendData[0]) = %d\nbytes = %d\nsendData[0] = %s\nreadData[1][0] = %d\n", strlen(sendData[0]), bytes, sendData[0], readData[1][0]);
 
 			const char* fileName = "D:\\Programming\\PocitacoveSystemy\\Zadanie1\\Zadanie1\\text.txt";
 
 			sendData[0] = searchWords(readData[0], (int)readData[1][0], fileName);
-
-			//sendData[0][strlen(readData[0])] = '\0';
-			//printf("SENDDATA = %s\n", sendData[0]);
-
-			uint32_t bytesSend;
-			if (writePort(&comPort, sendData, bytes, &bytesSend, true) == 0) {
-				free(readData[0]);
-				free(readData[1]);
-				free(sendData[0]);
-				printf("Error writing to serial port\n");
-				return 12;
-			}
-			else {
-				printf("Success writing to serial port\n", bytesSend);
-			}
 			free(readData[0]);
 			free(readData[1]);
+			printf("END FUNCTION sendData[0] = %s\n", sendData[0]);
+			///////////////////////////////////////////////////////////////////////
+			std::thread server(serverThread, comPort, bytes, sendData);
+			server.join();
+
+
+			Sleep(500);
 			free(sendData[0]);
 		}
 	}

@@ -9,17 +9,17 @@ char* searchWords(const char* pattern, int length, const char* filename) {
     if (strlen(pattern) != length+1)
         return NULL;
 
-    char line[256]; // Максимальная длина строки в файле
-    char word[MAX_LENGTH]; // Максимальная длина слова
-    char* result = NULL; // Результат поиска
+    char line[256]; // Maximum length of a line in a file
+	char word[MAX_LENGTH]; // MAX_LENGTH global variable
+    char* result = NULL;
 
     while (fgets(line, sizeof(line), file) != NULL) {
         char* context;
         char* token = strtok_s(line, " ", &context);
         while (token != NULL) {
-            // Проверка длины слова
+            // Check word length
             if (strlen(token) == (size_t)length) {
-                // Проверка шаблона слова
+                // Check word pattern
                 int i;
                 for (i = 0; i < length; ++i) {
                     if (pattern[i] != '_' && pattern[i] != token[i]) {
@@ -28,9 +28,10 @@ char* searchWords(const char* pattern, int length, const char* filename) {
                 }
 
                 if (i == length) {
-                    // Совпадение найдено
+                    // Match found
                     if (result == NULL) {
-                        result = _strdup(token); // strdup выделяет память и копирует строку
+                        // strdup allocates memory and copies the string
+                        result = _strdup(token); 
                     }
                     else {
                         size_t currentSize = strlen(result);

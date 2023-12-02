@@ -33,6 +33,13 @@ int client() {
 		return 1;
 	}
 
+	if (operator == 's' && num1 < 0) {
+		fprintf(stderr, "Error: Cannot calculate square root of a negative number\n");
+	}
+	else if (operator == '!' && num1 < 0) {
+		fprintf(stderr, "Error: Cannot calculate factorial\n");
+	}
+
 	WriteFile(pipe, &operator, sizeof(char), NULL, NULL);
 	WriteFile(pipe, &num1, sizeof(double), NULL, NULL);
 	WriteFile(pipe, &num2, sizeof(double), NULL, NULL);
